@@ -25,6 +25,12 @@ def cls():
         os.system('clear')
 
 def brute_office(domain):
+    #TODO: bruteforce office 365 here
+    pass
+
+def sprayAD(host):
+    #TODO: run AD spray here
+    pass
 
 def check_o365(url):
     return isO365
