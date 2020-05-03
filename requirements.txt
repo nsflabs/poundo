@@ -1,4 +1,3 @@
-progress
 requests
 argparse
 colorama
