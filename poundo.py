@@ -57,7 +57,7 @@ def sprayAD(host):
     pass
 
 
-def using_o365(username=default_creds["username"]):
+def using_o365(username):
     global iso365
 
     domain = username.split("@")[1].replace('.', '-')
@@ -78,7 +78,7 @@ def using_o365(username=default_creds["username"]):
 
 
 class check_o365(Thread):
-    def __init__(self, username=default_creds["username"], password=default_creds["password"]):
+    def __init__(self, username, password=default_creds["password"]):
         Thread.__init__(self)
         self.username = username
         self.password = password
@@ -89,7 +89,7 @@ class check_o365(Thread):
             print("[!]. Target is not using o365. Aborting.")
         else:
             driver = webdriver.Chrome()
-            driver.get("https://login.microsoftonline.com")
+            driver.get("https://login.microsoftonline.com") 
             element = driver.find_element_by_name("loginfmt")
             element.send_keys(self.username)
             element.send_keys(Keys.RETURN)
@@ -125,5 +125,4 @@ def main():
 
 if __name__ == '__main__':
     args = switch()
-    iso365 = False
     main()
