@@ -108,6 +108,7 @@ def hybrid_office_worker(policy,user,_pass):
     max_attempts, timelimit = tuple(policy.split(','))
     timelimit = 60*int(timelimit)
     max_attempts = int(max_attempts) - 1
+    print(type(user))
     if isinstance(user, str):
         #this shows we are spraying a single username against a passfile
         try:
