@@ -21,19 +21,14 @@ init()
 
 def switch():
     parser = ArgumentParser()
-    parser.add_argument('-host','--host', help='hostname, domain or url to bruteforce', required=False)
     parser.add_argument('-m','--mode', help='bruteforce mode to use [o365|smb|other]', required=False,)
     parser.add_argument('-u','--username', help='username to test [cannot be used with -uf or --userfile]', required=False)
     parser.add_argument('-p','--password', help='password to test [cannot be used with -pf or --passfile]', required=False)
     parser.add_argument('-uf','--userfile', help='list of usernames to test [cannot be used with -u or --username]', required=False)
     parser.add_argument('-pf','--passfile', help='list of password to test [cannot be used with -p or --password]', required=False)
-    parser.add_argument('-policy','--policy', help='password policy to be applied [attempts,seconds]', required=False)
-    #parser.add_argument('-r','--request', help='parse a request file {input file must be in txt}',required=False)
-    #parser.add_argument('-t','--thread', help='Number of threads to use [only use with -c or --check]',required=False)
+    parser.add_argument('-policy','--policy', help='password policy to be applied [attempts,minutes]', required=False)
     parser.add_argument('-v','--verbose', help='read output to terminal',required=False, action='store_true')
     return parser.parse_args()
-
-#https://github.com/curesec/tools/blob/master/smb/smb-brute-force.py
 
 def cls():
     os_env = platform.platform()
@@ -44,12 +39,28 @@ def cls():
 
 def banner():
     banner = """
-d8888b.  .d88b.  db    db d8b   db d8888b.  .d88b.  
-88  `8D .8P  Y8. 88    88 888o  88 88  `8D .8P  Y8. 
-88oodD' 88    88 88    88 88V8o 88 88   88 88    88 
-88~~~   88    88 88    88 88 V8o88 88   88 88    88 
-88      `8b  d8' 88b  d88 88  V888 88  .8D `8b  d8' 
-88       `Y88P'  ~Y8888P' VP   V8P Y8888D'  `Y88P
+                                                            
+                                     .*..,                  
+                                   ,#*/#(%#.                
+                                  ,%#%%#%%#                 
+                                .*###@&#/                   
+                ...  ..,,,,,,,*/,**#&&(*,. .,.              
+            .  ,/**/*/*(*/(#(,,**%%&#&#*****,.  ,           
+           .  (&%#####%%(&(,,*/#%%#&%#,**/*//(*  *          
+           #*.  ,%@&@@@@#/(/(%%&#%&#&(/((#/.   **,          
+           #(***,.,.                    ,*/#(///*           
+           *#//***,,,.,.,,,***//((((((%%%%###//*/           
+            #**/,.,,,,.......,***(####((#((#(/**            
+             #(/*,,,.,.,,,.,,,,**/((##(##(#((**,            
+              #(**.*,,,,,,*,,,/((((//(##(#(/**,             
+               ((*,,..,....,,,*//((##%%####/*.              
+                .(//,**,..**//((##((#%&%#(/*                
+                   #/#(*(##(((//#%@@%%##(/                  
+                    &%%%#%%%%&@@&@@&&%((*                   
+                  .(/*,,,..,,**/**((((##/,                  
+                  %/,,,..,.,...,*(#%#%(#(/.                 
+                    (#(/***/*//(((#####%*                   
+                          ,/(((//,                                         
 
                         from nsfLabs
 """
@@ -57,9 +68,8 @@ d8888b.  .d88b.  db    db d8b   db d8888b.  .d88b.
         
     
 def brute_office(username,password):
-
     try:
-        print("Checking credentials {0}:{1}".format(username, password))
+        print(Fore.YELLOW+"Checking credentials {0}:{1}".format(username, password))
         check_user = check_o365(username)
         if(check_user == None):
             print(Fore.RED+"[+] Error! Target does not seem to be using Office365")
@@ -95,6 +105,7 @@ def sprayAD(host):
     pass
 
 def check_o365(username):
+    
     domain = username.split('@')[1].replace('.', '-')
     url_dict = {
         "Global Office365": ".mail.protection.outlook.com",
@@ -116,8 +127,9 @@ def check_o365(username):
                 return False
             except:
                 return True
-        except:
-            pass
+        except Exception as e:
+            print(e)
+ 
 
 def hybrid_office_worker(policy,user,_pass):
     attempts = 1
@@ -169,7 +181,7 @@ def hybrid_office_worker(policy,user,_pass):
             exit(0)
             
     else:
-        print("[!]Unknown inputs. Check the usage")
+        print("[!]Unknown input. Check the usage")
 
 def hybrid_smb_worker(policy,username="",password="",userfile="",passfile=""):
     #TODO: Run hybrid bruteforcing here using worker threads
@@ -220,7 +232,7 @@ if __name__ == '__main__':
                 userfile = open(userfile,'r')
                 hybrid_office_worker(policy,userfile,passfile)
             else:
-                print("[+]Unknown error! Check usage")
+                print("[+]Unknow error! Check usage")
 
     # Run smb spraying test   
     if mode == "smb":
