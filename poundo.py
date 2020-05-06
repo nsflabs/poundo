@@ -80,7 +80,6 @@ def brute_office(username,password):
 
         elif(check_user == False):
             print(Fore.RED+"[+] Error! Invalid username")  
-            sys.exit(0)
         else:
             print(Fore.RED+"[+] Error! Unknown Error")
             sys.exit(0)
