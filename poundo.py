@@ -63,7 +63,6 @@ def brute_office(username,password):
         check_user = check_o365(username)
         if(check_user == None):
             print(Fore.RED+"[+] Error! Target does not seem to be using Office365")
-            sys.exit(0)
         elif (check_user == True):
             #TODO: run bruter
             header = {"MS-ASProtocolVersion": "14.0"
@@ -87,6 +86,7 @@ def brute_office(username,password):
     
     except KeyboardInterrupt:
         print("[!] Detected Ctrl + C. Shutting down...")
+        sys.exit(0)
         
 
 
@@ -220,7 +220,7 @@ if __name__ == '__main__':
                 userfile = open(userfile,'r')
                 hybrid_office_worker(policy,userfile,passfile)
             else:
-                print([+]Unknow error! Check usage)
+                print("[+]Unknown error! Check usage")
 
     # Run smb spraying test   
     if mode == "smb":
