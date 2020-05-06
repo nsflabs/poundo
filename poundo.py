@@ -236,7 +236,7 @@ if __name__ == '__main__':
                 userfile = open(userfile,'r')
                 hybrid_office_worker(policy,userfile,passfile)
             else:
-                print("[+]Unknow error! Check usage')
+                print("[+]Unknow error! Check usage")
 
     # Run smb spraying test   
     if mode == "smb":
