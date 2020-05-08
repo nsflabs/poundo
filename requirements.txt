@@ -2,3 +2,5 @@ requests
 argparse
 colorama
 selenium
+bs4
+unidecode
