@@ -1,21 +1,13 @@
 #!/usr/bin/env python3
-import platform
-import re
-import os
-import subprocess
-import socket
-import time
+import io, re, os, sys, platform, requests
+import time, socket, subprocess, concurrent.futures
 from datetime import datetime
 from argparse import ArgumentParser
 from threading import Thread
-import requests
-import sys
-import platform
 from colorama import init, Fore
 from time import sleep
-import io
 from queue import Queue
-import concurrent.futures
+
 
 init()
 
@@ -51,7 +43,6 @@ def cls():
 
 def banner():
     banner = """
-
                                      .*..,
                                    ,#*/#(%#.
                                   ,%#%%#%%#
@@ -73,12 +64,11 @@ def banner():
                   %/,,,..,.,...,*(#%#%(#(/.
                     (#(/***/*//(((#####%*
                           ,/(((//,
-
                         from nsfLabs
 """
     print(banner)
 
-
+# Bruteforcing for userdetails
 def brute_office(username, password):
     try:
         print(Fore.YELLOW +
@@ -113,13 +103,16 @@ def brute_office(username, password):
     except KeyboardInterrupt:
         print("[!] Detected Ctrl + C. Shutting down...")
         sys.exit(0)
+    except :
+        print("[!] Please check internet connection")
+        sys.exit(0)
 
 
 def sprayAD(host):
     # TODO: run AD spray here
     pass
 
-
+# checking if an organization uses o365 and checking if a user exist
 def check_o365(username):
     if verbose:
         print(Fore.YELLOW + "[!]Checking username: {}".format(username))
@@ -149,9 +142,13 @@ def check_o365(username):
 
 def hybrid_office_worker(policy, user, _pass):
     attempts = 1
-    max_attempts, timelimit = tuple(policy.split(','))
-    timelimit = 60*int(timelimit)
-    max_attempts = int(max_attempts) - 1
+    try:
+        max_attempts, timelimit = tuple(policy.split(','))
+        timelimit = 60*int(timelimit)
+        max_attempts = int(max_attempts) - 1
+    except:
+        print(Fore.RED +"[!] Please specify policy")
+        sys.exit()
 
     if isinstance(user, str)and isinstance(_pass, io.TextIOWrapper):
         # this shows we are spraying a single username against a passfile
@@ -197,7 +194,7 @@ def hybrid_office_worker(policy, user, _pass):
             exit(0)
 
     else:
-        print("[!]Unknown input. Check the usage")
+        print(Fore.RED +"[!]Unknown input. Check the usage")
 
 
 def hybrid_smb_worker(policy, username="", password="", userfile="", passfile=""):
