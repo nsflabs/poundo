@@ -19,6 +19,8 @@ Poundo attempts to access a large number of accounts (usernames) with a few comm
 $ git clone https://github.com/abdulgaphy/poundo.git
 $ cd poundo/
 $ pip3 install -r requirements.txt
+$ chmod +x generator.py
+$ python3 poundo.py -h
 ```
  ### Usage
  
