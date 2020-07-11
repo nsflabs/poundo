@@ -32,9 +32,9 @@ def switch():
     parser.add_argument(
         '-v', '--verbose', help='read output to terminal', required=False, action='store_true')
     parser.add_argument(
-        '-h', '--host', help='hostname/IP of the target machine', required=False)
+        '-h', '--host', help='hostname/IP of the remote machine', required=False)
     parser.add_argument(
-        '-s', '--servername', help='the computername or servername of the target machine', required=False)
+        '-s', '--servername', help='the computername or servername of the remote machine', required=False)
     
     return parser.parse_args()
 
