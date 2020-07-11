@@ -48,6 +48,7 @@ usage: poundo.py
 	-ip --host hostname/IP of the remote machine using the format IP:PORT
 	-s --servername the computername or servername of the remote machine
 	-c --client the computername of the client machine
+	-d --domain the domain name of the remote machine in the AD
     -v --verbose read output to terminal
 	
  ```
