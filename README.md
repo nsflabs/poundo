@@ -45,7 +45,7 @@ usage: poundo.py
     -uf --userfile list of usernames to test 
     -pf --passfile list of password to test  
     -policy --policy password policy to be applied [attempts,seconds]
-	-h --host hostname/IP of the remote machine
+	-ip --host hostname/IP of the remote machine
 	-s --servername the computername or servername of the remote machine
     -v --verbose read output to terminal
 	
