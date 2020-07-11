@@ -7,7 +7,6 @@ from threading import Thread
 from colorama import init, Fore
 from time import sleep
 from queue import Queue
-from ArgumentParser import print_help
 from nmb.NetBIOS import NetBIOS
 from smb.SMBConnection import SMBConnection
 
@@ -32,7 +31,7 @@ def switch():
     parser.add_argument(
         '-v', '--verbose', help='read output to terminal', required=False, action='store_true')
     parser.add_argument(
-        '-h', '--host', help='hostname/IP of the remote machine', required=False)
+        '-ip', '--host', help='hostname/IP of the remote machine', required=False)
     parser.add_argument(
         '-s', '--servername', help='the computername or servername of the remote machine', required=False)
     
