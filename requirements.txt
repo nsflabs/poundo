@@ -4,3 +4,4 @@ colorama
 selenium
 bs4
 unidecode
+pysmb
