@@ -214,7 +214,7 @@ def sprayAD(host,username,password,client,computerName="",domain=""):
         print(Fore.RED+"INVALID LOGIN on {}:{} using {}:{}".format(IP,port,username,password))
     
 
-def hybrid_smb_worker(host, policy, user, _pass,client, computerName=""):
+def hybrid_smb_worker(host, policy, user, _pass, client, computerName=""):
     #Run hybrid bruteforcing here
     attempts = 1
     
