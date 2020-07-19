@@ -2,6 +2,4 @@ requests
 argparse
 colorama
 pysmb
-selenium
 bs4
-unidecode
