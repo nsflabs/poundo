@@ -10,7 +10,7 @@ from queue import Queue
 from nmb.NetBIOS import NetBIOS
 from smb.SMBConnection import SMBConnection
 
-init()
+init(autoreset=True)
 
 verbose = False
 
@@ -105,8 +105,8 @@ def brute_office(username, password, check_user):
             r = requests.options(LOGIN_URL, headers=header,
                                  auth=(username, password), timeout=300)
             
-            color = Fore.GREEN+"VALID" if r.status_code == 200 else Fore.RED+"INVALID"
-            print("["+color+"]", "{}:{} - {}".format(username,password, STATUS_CODES[str(r.status_code)]))
+            color = Fore.GREEN+"VALID_CREDS" if r.status_code == 200 else Fore.RED+"INVALID_CREDENTIALS"
+            print("["+color,"]", "{}:{}".format(username,password))
         elif(check_user == False):
             print(Fore.RED+"[+] Error! Username does not exist: {}".format(username))
         else:
@@ -161,7 +161,9 @@ def hybrid_office_worker(policy, user, _pass):
                 # This is where we will apply our password policy
                 brute_office(user, password.strip("\n"), check_user)
                 if attempts == max_attempts:
-                    print("[*]Sleeping, Next spray in: {} seconds".format(timelimit))
+                    print()
+                    print(Fore.BLUE+"[*]Sleeping, Next spray in: {} seconds".format(timelimit))
+                    print()
                     sleep(timelimit)
                     attempts = 0
                 attempts = attempts + 1
@@ -180,7 +182,9 @@ def hybrid_office_worker(policy, user, _pass):
                 # This is where we will apply our password policy
                 brute_office(username.strip("\n"), _pass, check_user)
                 if attempts == max_attempts:
-                    print("[*]Sleeping, Next spray in: {} seconds".format(timelimit))
+                    print()
+                    print(Fore.Blue+"[*]Sleeping, Next spray in: {} seconds".format(timelimit))
+                    print()
                     sleep(timelimit)
                     attempts = 0
                 attempts = attempts + 1
@@ -201,7 +205,9 @@ def hybrid_office_worker(policy, user, _pass):
                     check_user = check_o365(username)
                     brute_office(username.strip("\n"), password.strip("\n"), check_user)
                 if attempts == max_attempts:
-                    print("[*]Sleeping, Next spray in: {} seconds".format(timelimit))
+                    print()
+                    print(Fore.BLUE+"[*]Sleeping, Next spray in: {} seconds".format(timelimit))
+                    print()
                     sleep(timelimit)
                     attempts = 0
                 attempts = attempts + 1
@@ -330,7 +336,8 @@ if __name__ == '__main__':
     if mode == "o365":
         print(Fore.BLUE+"Starting Office 365 Password Spraying/Bruteforce")
         if single_test:
-            brute_office(username, password)
+            check_user = check_o365(username)
+            brute_office(username, password,check_user)
         else:
             if not policy:
                 ArgumentParser().print_help()
