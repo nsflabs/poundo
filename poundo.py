@@ -170,8 +170,8 @@ def hybrid_office_worker(policy, user, _pass):
             print(e)
 
         except KeyboardInterrupt:
-        print(Fore.RED+"[!] Detected Ctrl + C. Shutting down...")
-        sys.exit(0)
+            print(Fore.RED+"[!] Detected Ctrl + C. Shutting down...")
+            sys.exit(0)
 
     elif isinstance(_pass, str) and isinstance(user, io.TextIOWrapper):
         # this shows we are spraying a single password against a userfile
@@ -189,8 +189,8 @@ def hybrid_office_worker(policy, user, _pass):
             print(e)
             
         except KeyboardInterrupt:
-        print(Fore.RED+"[!] Detected Ctrl + C. Shutting down...")
-        sys.exit(0)
+            print(Fore.RED+"[!] Detected Ctrl + C. Shutting down...")
+            sys.exit(0)
 
     elif isinstance(user, io.TextIOWrapper) and isinstance(_pass, io.TextIOWrapper):
         # this means we are spraying userfile against passfile.
@@ -212,8 +212,8 @@ def hybrid_office_worker(policy, user, _pass):
             exit(0)
             
         except KeyboardInterrupt:
-        print(Fore.RED+"[!] Detected Ctrl + C. Shutting down...")
-        sys.exit(0)
+            print(Fore.RED+"[!] Detected Ctrl + C. Shutting down...")
+            sys.exit(0)
 
     else:
         print(Fore.RED +"[!]Unknown input. Check the usage")
