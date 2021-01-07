@@ -105,13 +105,7 @@ def brute_office(username, password, check_user):
                                  auth=(username, password), timeout=300)
 
             color = Fore.GREEN+"VALID" if r.status_code == 200 else Fore.RED+"INVALID"
-<<<<<<< HEAD
             print("[{}]{}:{}".format(color, username,password, STATUS_CODES[str(r.status_code)]))
-=======
-            print("[{}]{}:{}".format(color, username,
-                                            password, STATUS_CODES[str(r.status_code)]))
->>>>>>> b7c905a81bec03abf2217e229c22719842333dc5
-
         elif(check_user == False):
             print(Fore.RED+"[+] Error! Invalid username: {}".format(username))
         else:
