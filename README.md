@@ -64,6 +64,10 @@ usage: poundo.py
 ## o365
 To password spray an office 365 you will need to provide a username or a list of usernames to bruteforce, password or a list of passwords to bruteforce, policy; specify a number of attempts per lockout period, and the time to wait between  each attempts.
 
+Example: If you want to carry out an office365 password spray - 5 passwords with a lockout duration of 30 mins
+
+python3 poundo.py -m o365 -uf userfile -pf passfile -policy 5,1800 -v
+
 ## SMB
 To spray a SMB service you will need to provide a Windows machine ip address with the open port, username or a list of usernames to bruteforce, password or a list of passwords to bruteforce, policy; specify a number of attempts per lockout period, the time to wait between  each attempts and, finally, the domain name to attack. 
 
